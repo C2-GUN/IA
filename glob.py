@@ -30,4 +30,6 @@ for caracter in glob.glob('D:\Documents\OPENCV\TRAINING' +'\*'):
  
     for x in Path(caracter).glob('*.jpg'):
         print(x)
+
+print('a')
        
