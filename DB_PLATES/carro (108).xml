@@ -1,0 +1,26 @@
+<annotation>
+  <folder>DB_PLATES</folder>
+  <filename>carro (108)</filename>
+  <path>D:\Documents\OPENCV\DB_PLATES\carro (108).JPG</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>3264</width>
+    <height>2448</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>PLATE</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <bndbox>
+      <xmin>1431</xmin>
+      <ymin>1350</ymin>
+      <xmax>1866</xmax>
+      <ymax>1529</ymax>
+    </bndbox>
+  </object>
+</annotation>
