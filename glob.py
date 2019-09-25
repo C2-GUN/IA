@@ -8,7 +8,7 @@ Created on Thu Sep 19 19:59:46 2019
 import glob
 
 
-chars = glob.glob('D:\Documents\OPENCV\TRAINING')
+#chars = glob.glob('D:\Documents\OPENCV\TRAINING')
 
 from pathlib import Path
 
