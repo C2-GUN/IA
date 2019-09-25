@@ -15,6 +15,7 @@ from pathlib import Path
 from sklearn.model_selection import  train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.externals import joblib
+from sklearn import metrics
 
 
 folder = 'D:\Documents\OPENCV\TRAINING'
@@ -218,9 +219,11 @@ for carpetas in glob.glob('D:\Documents\OPENCV\TRAINING' +'\*'):
 
 features = np.array(features_list, 'float64')
 X_train, X_test, y_train, y_test = train_test_split(features, label_list)
-knn = KNeighborsClassifier(n_neighbors=3)
+knn = KNeighborsClassifier(n_neighbors=5)
 knn.fit(X_train, y_train)
 model_score = knn.score(X_test, y_test)
-joblib.dump(knn, '/models/knn_model.pkl')
+joblib.dump(knn, 'D:\Documents\OPENCV\MODELS\knn_model3.pkl')
+y_pred = knn.predict(X_test)
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
 
 
