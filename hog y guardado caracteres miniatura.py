@@ -115,11 +115,11 @@ def characters(path):
             
             chars = img[y:y+h,x:x+w]
             
-            # resize image
-            chars = cv2.resize(chars, dim, interpolation = cv2.INTER_AREA)
+            #resize image
+            chars = cv2.resize(chars, dim)
             
-            #name = str(numero) + '.jpg'
-            #cv2.imwrite('%s/%s' % (folder,name), chars)               
+            name = str(numero)
+            cv2.imwrite('%s/%s.jpg' % (str(folder),str(name)), chars)               
             caracteres.append(chars)
             '''print(hierarchy)
             print('----------------')'''

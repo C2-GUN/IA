@@ -189,9 +189,9 @@ for i in range(35,36):
     path = 'D:\Documents\OPENCV\DB_PLATES\carro ('+str(i)+").jpg"
     car = cv2.imread(path)
     
-    '''cv2.namedWindow('Vehiculo', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('Vehiculo', cv2.WINDOW_NORMAL)
     cv2.imshow('Vehiculo', car)
-    cv2.waitKey()'''
+    cv2.waitKey()
     
     
     

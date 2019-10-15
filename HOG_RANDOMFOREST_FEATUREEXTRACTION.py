@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Jun 30 06:39:56 2019
+Created on Mon Oct 14 21:55:19 2019
 
 @author: CDEC
 """
@@ -13,11 +13,12 @@ import matplotlib.pyplot as plt
 import glob
 from pathlib import Path
 from sklearn.model_selection import  train_test_split
-from sklearn.neighbors import KNeighborsClassifier
+
 from sklearn.externals import joblib
 from sklearn import metrics
 from sklearn.metrics import confusion_matrix
 from timeit import default_timer as timer
+from sklearn.ensemble import RandomForestClassifier
 
 start = timer()
 
@@ -194,15 +195,17 @@ for carpetas in glob.glob('D:\Documents\OPENCV\TRAINING' +'\*'):
 
 features = np.array(features_list, 'float64')
 X_train, X_test, y_train, y_test = train_test_split(features, label_list, test_size=0.3)
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_train, y_train)
-model_score = knn.score(X_test, y_test)
-y_pred = knn.predict(X_test)
-joblib.dump(knn, 'D:\Documents\OPENCV\MODELS\HOG_KNN_MODEL_'+str(metrics.accuracy_score(y_test, y_pred))+'.pkl')
+
+clf=RandomForestClassifier(n_estimators=100)
+clf.fit(X_train, y_train)
+
+model_score = clf.score(X_test, y_test)
+y_pred = clf.predict(X_test)
+joblib.dump(clf, 'D:\Documents\OPENCV\MODELS\HOG_RANDONFOREST_MODEL_'+str(metrics.accuracy_score(y_test, y_pred))+'.pkl')
 end = timer()
 print("{0:.3f}".format(end - start)+' seconds') # Time in seconds
 print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
 plt.figure(figsize=(20,20))
 plot_confusion_matrix(y_test,y_pred,['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'])
-plt.savefig('CONFUSION_MATRIX_HOG_KNN')
+plt.savefig('CONFUSION_MATRIX_HOG_RANDOMFOREST')
 

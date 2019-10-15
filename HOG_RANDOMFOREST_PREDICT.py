@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep 25 00:03:51 2019
+Created on Mon Oct 14 22:16:01 2019
 
 @author: CDEC
 """
+
 import cv2
 import numpy as np
 from sklearn.externals import joblib
@@ -58,12 +59,12 @@ def Hoog(img, sourcer_params):
     return features, hog_img
 
 
-knn = joblib.load('D:\Documents\OPENCV\MODELS\knn_model.pkl')
+RandomForest = joblib.load('D:\Documents\OPENCV\MODELS\HOG_RANDONFOREST_MODEL_0.9875389408099688.pkl')
 
 
 
 
-img = cv2.imread('D:\\Documents\\OPENCV\\TRAINING\\1.jpg')
+img = cv2.imread('D:\\Documents\\OPENCV\\TRAINING\\3.jpg')
 
 imgX = change_color(img, sourcer_params)        
 (features, hog_img) = Hoog(imgX, sourcer_params)
@@ -72,5 +73,5 @@ imgX = change_color(img, sourcer_params)
 
 
 
-nbr = knn.predict(np.array([features], 'float64'))
+nbr = RandomForest.predict(np.array([features], 'float64'))
 print(nbr[0])

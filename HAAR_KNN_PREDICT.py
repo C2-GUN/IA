@@ -1,13 +1,37 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep 25 00:03:51 2019
+Created on Sat Sep 28 01:29:26 2019
 
 @author: CDEC
 """
+
 import cv2
 import numpy as np
+kernel = np.ones((5,5),np.uint8)
+import matplotlib.pyplot as plt
+import glob
+from pathlib import Path
+from sklearn.model_selection import  train_test_split
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.externals import joblib
-from skimage.feature import hog
+from sklearn import metrics
+from skimage.feature import haar_like_feature
+from skimage.transform import integral_image
+from timeit import default_timer as timer
+
+start = timer()
+
+folder = 'D:\Documents\OPENCV\TRAINING'
+width = 40
+height = 40
+dim = (width, height)
+label_list = []
+features_list = []
+features_windows = []
+window_feature_IN_piramid = []
+window = []
+feature_types = ['type-4']
+windows = []
 
 
 sourcer_params = {
@@ -43,34 +67,16 @@ def change_color(img, sourcer_params):
     return img#, hogA_img, hogB_img, hogC_img
 
 
-def Hoog(img, sourcer_params):
-         
-    features, hog_img = hog(img, 
-                        orientations = sourcer_params['number_of_orientations'], 
-                        pixels_per_cell = (sourcer_params['pixels_per_cell'], sourcer_params['pixels_per_cell']),
-                        cells_per_block = (sourcer_params['cells_per_block'], sourcer_params['cells_per_block']), 
-                        transform_sqrt = sourcer_params['transform_sqrt'], 
-                        visualize = True, 
-                        feature_vector = True,
-                        block_norm='L2-Hys')
-    
+ 
 
-    return features, hog_img
+knn = joblib.load('D:\Documents\OPENCV\MODELS\HAAR_KNN_MODEL_0.9291044776119403.pkl')
 
+img = cv2.imread('D:\\Documents\\OPENCV\\TRAINING\\2.jpg')
+imgGREY = change_color(img, sourcer_params)
+imgX = integral_image(imgGREY)        
+features = haar_like_feature(imgX, 0, 0, 40, 40, feature_types)
 
-knn = joblib.load('D:\Documents\OPENCV\MODELS\knn_model.pkl')
-
-
-
-
-img = cv2.imread('D:\\Documents\\OPENCV\\TRAINING\\1.jpg')
-
-imgX = change_color(img, sourcer_params)        
-(features, hog_img) = Hoog(imgX, sourcer_params)
-
-
-
-
-
-nbr = knn.predict(np.array([features], 'float64'))
+nbr = knn.predict(np.array([features]))
 print(nbr[0])
+end = timer()
+print("{0:.3f}".format(end - start)+' seconds') # Time in seconds

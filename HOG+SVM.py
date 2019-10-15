@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep 25 00:03:51 2019
+Created on Thu Sep 26 00:22:29 2019
 
 @author: CDEC
 """
+
 import cv2
 import numpy as np
 from sklearn.externals import joblib
@@ -50,7 +51,7 @@ def Hoog(img, sourcer_params):
                         pixels_per_cell = (sourcer_params['pixels_per_cell'], sourcer_params['pixels_per_cell']),
                         cells_per_block = (sourcer_params['cells_per_block'], sourcer_params['cells_per_block']), 
                         transform_sqrt = sourcer_params['transform_sqrt'], 
-                        visualize = True, 
+                        visualise = True, 
                         feature_vector = True,
                         block_norm='L2-Hys')
     
@@ -58,19 +59,12 @@ def Hoog(img, sourcer_params):
     return features, hog_img
 
 
-knn = joblib.load('D:\Documents\OPENCV\MODELS\knn_model.pkl')
-
-
-
+svm = joblib.load('D:\Documents\OPENCV\MODELS\svm_model.pkl')
 
 img = cv2.imread('D:\\Documents\\OPENCV\\TRAINING\\1.jpg')
 
 imgX = change_color(img, sourcer_params)        
 (features, hog_img) = Hoog(imgX, sourcer_params)
 
-
-
-
-
-nbr = knn.predict(np.array([features], 'float64'))
+nbr = svm.predict(np.array([features], 'float64'))
 print(nbr[0])

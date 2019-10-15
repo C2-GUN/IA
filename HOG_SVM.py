@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Jun 30 06:39:56 2019
+Created on Wed Sep 25 22:31:08 2019
 
 @author: CDEC
 """
 
 import cv2
 import numpy as np
-kernel = np.ones((5,5),np.uint8)
 from skimage.feature import hog
 import matplotlib.pyplot as plt
 import glob
@@ -16,8 +15,10 @@ from sklearn.model_selection import  train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.externals import joblib
 from sklearn import metrics
+from sklearn import svm
 from sklearn.metrics import confusion_matrix
 from timeit import default_timer as timer
+import scikitplot as skplt
 
 start = timer()
 
@@ -75,6 +76,7 @@ def Hoog(img, sourcer_params):
     
 
     return features, hog_img
+
 
 def plot_confusion_matrix(y_true, y_pred, classes,
                           normalize=False,
@@ -136,8 +138,6 @@ def plot_confusion_matrix(y_true, y_pred, classes,
 
 
 
-
-
 for carpetas in glob.glob('D:\Documents\OPENCV\TRAINING' +'\*'):
     print('\n')
     print(carpetas)
@@ -193,16 +193,27 @@ for carpetas in glob.glob('D:\Documents\OPENCV\TRAINING' +'\*'):
         
 
 features = np.array(features_list, 'float64')
-X_train, X_test, y_train, y_test = train_test_split(features, label_list, test_size=0.3)
-knn = KNeighborsClassifier(n_neighbors=5)
-knn.fit(X_train, y_train)
-model_score = knn.score(X_test, y_test)
-y_pred = knn.predict(X_test)
-joblib.dump(knn, 'D:\Documents\OPENCV\MODELS\HOG_KNN_MODEL_'+str(metrics.accuracy_score(y_test, y_pred))+'.pkl')
+X_train, X_test, y_train, y_test = train_test_split(features, label_list, test_size=0.3, random_state=109)
+
+clf = svm.SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+    decision_function_shape='ovo', degree=3, gamma=0.01, kernel='linear',
+    max_iter=-1, probability=False, random_state=None, shrinking=True,
+    tol=0.001, verbose=False)
+clf.fit(X_train, y_train)
+
+model_score = clf.score(X_test, y_test)
+
+y_pred = clf.predict(X_test)
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+print("Precision:",metrics.precision_score(y_test, y_pred, average='micro'))
+print("Recall:",metrics.recall_score(y_test, y_pred, average='micro'))
+
+joblib.dump(clf, 'D:\Documents\OPENCV\MODELS\HOG_SVM_MODEL_'+str(metrics.accuracy_score(y_test, y_pred))+'.pkl')
 end = timer()
 print("{0:.3f}".format(end - start)+' seconds') # Time in seconds
 print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
 plt.figure(figsize=(20,20))
 plot_confusion_matrix(y_test,y_pred,['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'])
-plt.savefig('CONFUSION_MATRIX_HOG_KNN')
-
+plt.savefig('CONFUSION2_MATRIX_HOG_SVM')
+skplt.metrics.plot_roc_curve(y_test, y_pred)
+plt.show()

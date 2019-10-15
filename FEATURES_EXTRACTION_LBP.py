@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Jun 30 06:39:56 2019
+Created on Fri Oct  4 05:48:16 2019
 
 @author: CDEC
 """
@@ -8,7 +8,6 @@ Created on Sun Jun 30 06:39:56 2019
 import cv2
 import numpy as np
 kernel = np.ones((5,5),np.uint8)
-from skimage.feature import hog
 import matplotlib.pyplot as plt
 import glob
 from pathlib import Path
@@ -16,11 +15,15 @@ from sklearn.model_selection import  train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.externals import joblib
 from sklearn import metrics
-from sklearn.metrics import confusion_matrix
+from skimage.transform import integral_image
 from timeit import default_timer as timer
+from skimage.feature import local_binary_pattern
+from skimage import feature
+from skimage.feature import multiblock_lbp
+from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import cross_val_score
 
 start = timer()
-
 
 folder = 'D:\Documents\OPENCV\TRAINING'
 width = 40
@@ -28,6 +31,11 @@ height = 40
 dim = (width, height)
 label_list = []
 features_list = []
+features_windows = []
+window_feature_IN_piramid = []
+window = []
+windows = []
+
 
 sourcer_params = {
   'color_model': 'grey',                # hls, hsv, yuv, ycrcb
@@ -62,19 +70,24 @@ def change_color(img, sourcer_params):
     return img#, hogA_img, hogB_img, hogC_img
 
 
-def Hoog(img, sourcer_params):
-         
-    features, hog_img = hog(img, 
-                        orientations = sourcer_params['number_of_orientations'], 
-                        pixels_per_cell = (sourcer_params['pixels_per_cell'], sourcer_params['pixels_per_cell']),
-                        cells_per_block = (sourcer_params['cells_per_block'], sourcer_params['cells_per_block']), 
-                        transform_sqrt = sourcer_params['transform_sqrt'], 
-                        visualise = True, 
-                        feature_vector = True,
-                        block_norm='L2-Hys')
     
 
-    return features, hog_img
+
+def descriptor(image, numPoints, radius, eps=1e-7):
+    # compute the Local Binary Pattern representation
+	# of the image, and then use the LBP representation
+	# to build the histogram of patterns
+	lbp = feature.local_binary_pattern(image, numPoints, radius, method="uniform")
+	(hist, _) = np.histogram(lbp.ravel(), bins=np.arange(0, numPoints + 3),
+			range=(0, numPoints + 2))
+ 
+	# normalize the histogram
+	hist = hist.astype("float")
+	hist /= (hist.sum() + eps)
+ 
+	# return the histogram of Local Binary Patterns
+	return lbp, hist
+
 
 def plot_confusion_matrix(y_true, y_pred, classes,
                           normalize=False,
@@ -131,10 +144,6 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     return ax  
 
 
- 
-
-
-
 
 
 
@@ -147,28 +156,32 @@ for carpetas in glob.glob('D:\Documents\OPENCV\TRAINING' +'\*'):
     
  
     for digitos in Path(carpetas).glob('*.jpg'):
-        print(digitos) 
         img = cv2.imread(str(digitos))
         '''cv2.namedWindow('PLACA', cv2.WINDOW_NORMAL)
         cv2.imshow('PLACA', img)
         cv2.waitKey()'''
         
         
-        imgX = change_color(img, sourcer_params)
+        imgGREY = change_color(img, sourcer_params)
         
-        (features, hog_img) = Hoog(imgX, sourcer_params)
+        features = local_binary_pattern(imgGREY, 14, 2, method="uniform")
+        lbp, hist = descriptor(imgGREY, numPoints = 24 , radius = 8, eps=1e-7)
+        
+
+        
+           
         
         '''cv2.namedWindow('Digito grey', cv2.WINDOW_NORMAL)
-        cv2.imshow('Digito grey', imgX)
+        cv2.imshow('Digito grey', lbp)
         cv2.waitKey()
         
         cv2.namedWindow('HOG image', cv2.WINDOW_NORMAL)
-        cv2.imshow('HOG image', hog_img)
+        cv2.imshow('HOG image', lbp)
         cv2.waitKey()'''
         
-        print('Caracteristicas: ' ,len(features) )
+        print('Caracteristicas: ' ,len(hist))
         
-        fig, ax = plt.subplots(1,3)
+        fig, ax = plt.subplots(1,5)
         fig.set_size_inches(8,6)
         # remove ticks and their labels
         [a.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False)
@@ -176,33 +189,41 @@ for carpetas in glob.glob('D:\Documents\OPENCV\TRAINING' +'\*'):
 
         ax[0].imshow(img)
         ax[0].set_title('caracter')
-        ax[1].imshow(imgX)
+        ax[1].imshow(imgGREY)
         ax[1].set_title('Escala grises')
-        ax[2].imshow(hog_img)
-        ax[2].set_title('HOG')
+        ax[2].imshow(features)
+        ax[2].set_title('LBP')
+        ax[3].set_xlim([0, 256])
+        ax[3].set_ylim([0, 0.030]) 
+        ax[3].hist(features.ravel(), normed=True, bins=20, range=(0, 256))               
+        ax[3].set_title('Histogram')
+        ax[4].imshow(lbp)
+        ax[4].set_title('LBP2')
         
 
         plt.show()
        
         
-        features_list.append(features)
+        features_list.append(hist)
         label_list.append(str(carpetas[29:30]))
         print('Caracteristicas totales: ' ,len(features_list) )
+        print('Labels totales: ' ,len(label_list) )
         
         #input("Press Enter to continue...")
         
 
-features = np.array(features_list, 'float64')
-X_train, X_test, y_train, y_test = train_test_split(features, label_list, test_size=0.3)
-knn = KNeighborsClassifier(n_neighbors=5)
+features = np.array(features_list)
+X_train, X_test, y_train, y_test= train_test_split(features, label_list, test_size=0.3)
+print("X_train: ", len(X_train))
+print("y_train: ", len(y_train))
+knn = KNeighborsClassifier(n_neighbors=1)
 knn.fit(X_train, y_train)
 model_score = knn.score(X_test, y_test)
 y_pred = knn.predict(X_test)
-joblib.dump(knn, 'D:\Documents\OPENCV\MODELS\HOG_KNN_MODEL_'+str(metrics.accuracy_score(y_test, y_pred))+'.pkl')
-end = timer()
-print("{0:.3f}".format(end - start)+' seconds') # Time in seconds
 print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
+joblib.dump(knn, 'D:\Documents\OPENCV\MODELS\LBP_KNN_MODEL_'+str(metrics.accuracy_score(y_test, y_pred))+'.pkl')
+end = timer()
+print("{0:.3f}".format(end - start)+' seconds') # Time in seconds 
 plt.figure(figsize=(20,20))
 plot_confusion_matrix(y_test,y_pred,['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'])
-plt.savefig('CONFUSION_MATRIX_HOG_KNN')
-
+plt.savefig('CONFUSION_MATRIX_HAAR_KNN')
